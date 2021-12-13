@@ -6,6 +6,7 @@ from core import loggermod as lgm
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication,
+    QComboBox,
     QGridLayout,
     QHBoxLayout,
     QDialog,
@@ -43,7 +44,7 @@ class mainWindow(QWidget):
 
 
         btnsymbol = ['String Change', 'Front/Back Adding',
-                     'EXT Change', 'Clear', 'Apply', 'File Select']
+                     'Part Change', 'Clear', 'Apply', 'File Select']
         self.funcbtn = [x for x in btnsymbol]
         for i, symbol in enumerate(btnsymbol):
             self.funcbtn[i] = Button(symbol, self.btnCli)
@@ -76,19 +77,34 @@ class mainWindow(QWidget):
                     self.libox.setItem(cur, j, QTableWidgetItem(files[i][j]))
 
             self.libox.resizeColumnsToContents()
-            #self.libox.addItems(fileNames)
-            #self.libox.sortItems()
+
         elif key == 'Clear':
             lgm.logmsg('Cleared list', "debug")
             self.libox.clear()
+        
         elif key == 'String Change':
-            sfw=schfndWindow(self)
+            sfw=schcngWindow(self)
             sfw.exec_()
             for i in range(self.libox.rowCount()):
                 if sfw.fndstring in self.libox.item(i, 1).text():
                     self.libox.setItem(i, 1, QTableWidgetItem(self.libox.item(
                         i, 1).text().replace(sfw.fndstring, sfw.cngstring)))
+        
+        elif key == "Front/Back Adding":
+            fba= fbaddWindow(self)
+            fba.exec_()
+            if(fba.where=="N/A"):
+                return
             
+            
+            for i in range(self.libox.rowCount()):
+                tocng = self.libox.item(i, 1).text()
+                cur = fnm.noext(tocng)
+                if(fba.where=="Front"):
+                    self.libox.setItem(i, 1, QTableWidgetItem(tocng.replace(cur,(fba.cngstring+cur))))
+                elif(fba.where=="Back"):
+                    self.libox.setItem(i, 1, QTableWidgetItem(tocng.replace(cur, (cur+fba.cngstring))))
+        
         elif key == 'Apply':
             lgm.logmsg("Applying changes","debug")
             print(self.libox.item(0, 1).text())
@@ -100,15 +116,16 @@ class mainWindow(QWidget):
                     fnm.rename(bef,aft,path)
                     self.libox.setItem(i, 0, QTableWidgetItem(aft))
                     self.libox.setItem(i, 2, QTableWidgetItem(path.replace(bef,aft)))
-                    
+        
+
         #    self.display.setText('0')
         #else:
                 
 
-class schfndWindow(QDialog):
+class schcngWindow(QDialog):
     def __init__(self,parent):
-        super(schfndWindow,self).__init__(parent)
-        self.setWindowTitle("Cdm Batch Renamer")
+        super(schcngWindow,self).__init__(parent)
+        self.setWindowTitle("Find and Changer")
         # Create a QGridLayout instance
         mlo1= QVBoxLayout()
         lo1= QHBoxLayout()
@@ -138,13 +155,56 @@ class schfndWindow(QDialog):
         lgm.logmsg('Button called', "debug")
         
         if key == 'Apply':
-            self.cngstring=self.cngstr.text()
-            self.fndstring=self.fndstr.text()
+            self.cngstring = self.cngstr.text()
+            self.cngstring = self.cngstr.text()
             self.close()
         elif key == 'Cancel':
-            lgm.logmsg("Closing schfndWindow", "debug")
+            lgm.logmsg("Closing schcngWindow", "debug")
             self.close()
 
+
+class fbaddWindow(QDialog):
+    def __init__(self, parent):
+        super(fbaddWindow, self).__init__(parent)
+        self.setWindowTitle("Front/Back Add")
+        # Create a QGridLayout instance
+        mlo1 = QVBoxLayout()
+        lo1 = QHBoxLayout()
+        self.wherebox = QComboBox()
+        self.wherebox.addItem("Front")
+        self.wherebox.addItem("Back")
+        self.cngstr = QLineEdit()
+        # Add widgets to the layout
+        mlo1.addWidget(QLabel("Where to Add"))
+        mlo1.addWidget(self.wherebox)
+        mlo1.addWidget(QLabel("String to change"))
+        mlo1.addWidget(self.cngstr)
+        # Set the layout on the application's window
+        btnsymbol = ['Apply', 'Cancel']
+        self.funcbtn = [x for x in btnsymbol]
+        for i, symbol in enumerate(btnsymbol):
+            self.funcbtn[i] = Button(symbol, self.btnCli)
+
+        for i in range(2):
+            self.funcbtn[i].setMaximumWidth(130)
+            lo1.addWidget(self.funcbtn[i])
+        mlo1.addLayout(lo1)
+        self.setLayout(mlo1)
+        self.show()
+
+    def btnCli(self):
+        button = self.sender()
+        key = button.text()
+        lgm.logmsg('Button called', "debug")
+
+        if key == 'Apply':
+            self.where = self.wherebox.currentText()
+            self.cngstring = self.cngstr.text()
+            self.close()
+        elif key == 'Cancel':
+            self.where = "N/A"
+            lgm.logmsg("Closing schcngWindow", "debug")
+            self.close()
 
 class Button(QToolButton):
 

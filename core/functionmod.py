@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from core import loggermod as lgm
 from PyQt5.QtWidgets import QFileDialog
 
@@ -34,3 +35,6 @@ def Filesep(filepath):
 def rename(before, after, path):
     print(path)
     os.rename(path, path.replace(before, after))
+
+def noext(file):
+    return Path(file).stem
