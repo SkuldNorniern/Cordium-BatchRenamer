@@ -1,4 +1,6 @@
 import sys
+
+from PyQt5.QtGui import QTextBlock
 from core import functionmod as fnm
 from core import loggermod as lgm
 from PyQt5.QtCore import Qt
@@ -6,8 +8,9 @@ from PyQt5.QtWidgets import (
     QApplication,
     QGridLayout,
     QHBoxLayout,
-    QListView,
-    QListWidget,
+    QDialog,
+    QLabel,
+    QLineEdit,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -23,8 +26,9 @@ class mainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cdm Batch Renamer")
-
-        mlo1=QVBoxLayout()
+        self.setGeometry(300, 300, 900, 250)
+        
+        mlo1=QVBoxLayout() # for future update
         mlo2=QHBoxLayout()
         lo1=QHBoxLayout()
         lo2=QVBoxLayout()
@@ -32,7 +36,8 @@ class mainWindow(QWidget):
         self.libox = QTableWidget()
         self.libox.setColumnCount(3)
         self.libox.setHorizontalHeaderLabels(["Name", "Changed Name","Path"])
-        
+        #self.libox.setSizeAdjustPolicy(
+        #    QtWidgets.QAbstractScrollArea.AdjustToContents)
         
         lo1.addWidget(self.libox)
 
@@ -58,63 +63,87 @@ class mainWindow(QWidget):
     def btnCli(self):
         button = self.sender()
         key = button.text()
-        lgm.logmsg('Button Called', "debug")
+        lgm.logmsg('Button called', "debug")
         if key == 'File Select':
-            fileNames=fnm.FilesOpen(self)
             files=[]
-            for i in fileNames:
-                h,w = fnm.Filesep(i)
-                file=[w,w,h+w]
-                files.append(file)
-                
+            files=fnm.FilesOpen(self)
+            if(len(files)==0):
+                return 
             for i in range(len(files)):
                 cur = self.libox.rowCount()
                 self.libox.insertRow(cur)
                 for j in range(3):
-                    print(files[i][j])
                     self.libox.setItem(cur, j, QTableWidgetItem(files[i][j]))
+
+            self.libox.resizeColumnsToContents()
             #self.libox.addItems(fileNames)
             #self.libox.sortItems()
-        if key == 'Clear':
+        elif key == 'Clear':
             lgm.logmsg('Cleared list', "debug")
             self.libox.clear()
-        #    result = str(eval(self.display.text()))
-        #    self.display.setText(result)
-        #elif key == 'C':
+        elif key == 'String Change':
+            sfw=schfndWindow(self)
+            sfw.exec_()
+            for i in range(self.libox.rowCount()):
+                if sfw.fndstring in self.libox.item(i, 1).text():
+                    self.libox.setItem(i, 1, QTableWidgetItem(self.libox.item(
+                        i, 1).text().replace(sfw.fndstring, sfw.cngstring)))
+            
+        elif key == 'Apply':
+            lgm.logmsg("Applying changes","debug")
+            print(self.libox.item(0, 1).text())
+            for i in range(self.libox.rowCount()):
+                bef = self.libox.item(i, 0).text()
+                aft = self.libox.item(i, 1).text()
+                if bef != aft:
+                    path,thr = fnm.Filesep(self.libox.item(i, 2).text())
+                    fnm.rename(bef,aft,path)
+                    self.libox.setItem(i, 0, QTableWidgetItem(aft))
+                    self.libox.setItem(i, 2, QTableWidgetItem(path+aft))
+                    
         #    self.display.setText('0')
         #else:
                 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.acceptProposedAction()
-        else:
-            super(mainWindow, self).dragEnterEvent(event)
 
-    def dragMoveEvent(self, event):
-        super(mainWindow, self).dragMoveEvent(event)
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls():
-            links = []
-            for url in event.mimeData().urls():
-                links.append(str(url.toLocalFile()))
-            self.emit(Qt.SIGNAL("dropped"), links)
-            event.acceptProposedAction()
-        else:
-            super(mainWindow, self).dropEvent(event)
-
-class schfndWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+class schfndWindow(QDialog):
+    def __init__(self,parent):
+        super(schfndWindow,self).__init__(parent)
         self.setWindowTitle("Cdm Batch Renamer")
         # Create a QGridLayout instance
-        layout = QGridLayout()
+        mlo1= QVBoxLayout()
+        lo1= QHBoxLayout()
+        self.fndstr=QLineEdit()
+        self.cngstr = QLineEdit()
         # Add widgets to the layout
-        layout.addWidget(QPushButton("Button at (0, 0)"), 0, 0)
-        layout.addWidget(QPushButton("Button at (0, 1)"), 0, 1)
-        layout.addWidget(QPushButton("Button Spans two Cols"), 1, 0, 1, 2)
+        mlo1.addWidget(QLabel("String to find"))
+        mlo1.addWidget(self.fndstr)
+        mlo1.addWidget(QLabel("String to change"))
+        mlo1.addWidget(self.cngstr)
         # Set the layout on the application's window
-        self.setLayout(layout)
+        btnsymbol = ['Apply', 'Cancel']
+        self.funcbtn = [x for x in btnsymbol]
+        for i, symbol in enumerate(btnsymbol):
+            self.funcbtn[i] = Button(symbol, self.btnCli)
+
+        for i in range(2):
+            self.funcbtn[i].setMaximumWidth(130)
+            lo1.addWidget(self.funcbtn[i])
+        mlo1.addLayout(lo1)
+        self.setLayout(mlo1)
+        self.show()
+
+    def btnCli(self):
+        button = self.sender()
+        key = button.text()
+        lgm.logmsg('Button called', "debug")
+        
+        if key == 'Apply':
+            self.cngstring=self.cngstr.text()
+            self.fndstring=self.fndstr.text()
+            self.close()
+        elif key == 'Cancel':
+            lgm.logmsg("Closing schfndWindow", "debug")
+            self.close()
 
 
 class Button(QToolButton):
