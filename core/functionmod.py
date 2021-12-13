@@ -13,7 +13,10 @@ def FilesOpen(instance):
     files = []
     if dialog.exec_():
         fileNames = dialog.selectedFiles()
-        filetable(fileNames)
+        for i in file:
+            h, w = Filesep(i)
+            filee = [w, w, list2String(i)]
+            files.append(filee)
     return files
 
 def filetable(file):

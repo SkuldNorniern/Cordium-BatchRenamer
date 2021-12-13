@@ -71,7 +71,8 @@ class mainWindow(QWidget):
 
         elif key == 'Clear':
             lgm.logmsg('Cleared list', "debug")
-            self.libox.clear()
+            for i in range(self.libox.rowCount()):
+                self.libox.removeRow(i)
         
         elif key == 'String Change':
             sfw=schcngWindow(self)
