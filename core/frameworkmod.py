@@ -1,25 +1,17 @@
-import sys
-
-from PyQt5.QtGui import QTextBlock
 from core import functionmod as fnm
 from core import loggermod as lgm
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
-    QApplication,
     QComboBox,
-    QGridLayout,
     QHBoxLayout,
     QDialog,
     QLabel,
     QLineEdit,
-    QPushButton,
     QVBoxLayout,
     QWidget,
     QToolButton,
     QTableWidget,
     QTableWidgetItem,
-    QSizePolicy,
-    QListWidget
+    QSizePolicy
  )
 
 
@@ -33,13 +25,12 @@ class mainWindow(QWidget):
         mlo2=QHBoxLayout()
         lo1=QHBoxLayout()
         lo2=QVBoxLayout()
-        # Add widgets to the layout
+        
         self.libox = QTableWidget()
         self.libox.setColumnCount(3)
         self.libox.setHorizontalHeaderLabels(["Name", "Changed Name","Path"])
-        #self.libox.setSizeAdjustPolicy(
-        #    QtWidgets.QAbstractScrollArea.AdjustToContents)
-        
+        self.setAcceptDrops(True)
+
         lo1.addWidget(self.libox)
 
 
@@ -58,7 +49,7 @@ class mainWindow(QWidget):
         mlo2.addLayout(lo1)
         mlo2.addLayout(lo2)
         mlo1.addLayout(mlo2)
-        #mlo1.addWidget(self.funcbtn[5])
+        
         self.setLayout(mlo1)
 
     def btnCli(self):
@@ -125,27 +116,39 @@ class mainWindow(QWidget):
                     fnm.rename(bef,aft,path)
                     self.libox.setItem(i, 0, QTableWidgetItem(aft))
                     self.libox.setItem(i, 2, QTableWidgetItem(path.replace(bef,aft)))
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.accept()
+        else:
+            event.ignore()
+    def dropEvent(self, event):
+        files = [u.toLocalFile() for u in event.mimeData().urls()]
         
+        filess = fnm.filetable(files)
+        
+        for i in range(len(filess)):
+            cur = self.libox.rowCount()
+            self.libox.insertRow(cur)
+            for j in range(3):
+                self.libox.setItem(cur, j, QTableWidgetItem(filess[i][j]))
 
-        #    self.display.setText('0')
-        #else:
-                
+            self.libox.resizeColumnsToContents()            
 
 class schcngWindow(QDialog):
     def __init__(self,parent):
         super(schcngWindow,self).__init__(parent)
         self.setWindowTitle("Find and Changer")
-        # Create a QGridLayout instance
+       
         mlo1= QVBoxLayout()
         lo1= QHBoxLayout()
         self.fndstr=QLineEdit()
         self.cngstr = QLineEdit()
-        # Add widgets to the layout
+        
         mlo1.addWidget(QLabel("String to find"))
         mlo1.addWidget(self.fndstr)
         mlo1.addWidget(QLabel("String to change"))
         mlo1.addWidget(self.cngstr)
-        # Set the layout on the application's window
+         
         btnsymbol = ['Apply', 'Cancel']
         self.funcbtn = [x for x in btnsymbol]
         for i, symbol in enumerate(btnsymbol):
@@ -176,19 +179,19 @@ class fbaddWindow(QDialog):
     def __init__(self, parent):
         super(fbaddWindow, self).__init__(parent)
         self.setWindowTitle("Front/Back Add")
-        # Create a QGridLayout instance
+        
         mlo1 = QVBoxLayout()
         lo1 = QHBoxLayout()
         self.wherebox = QComboBox()
         self.wherebox.addItem("Front")
         self.wherebox.addItem("Back")
         self.cngstr = QLineEdit()
-        # Add widgets to the layout
+        
         mlo1.addWidget(QLabel("Where to Add"))
         mlo1.addWidget(self.wherebox)
         mlo1.addWidget(QLabel("String to change"))
         mlo1.addWidget(self.cngstr)
-        # Set the layout on the application's window
+        
         btnsymbol = ['Apply', 'Cancel']
         self.funcbtn = [x for x in btnsymbol]
         for i, symbol in enumerate(btnsymbol):
@@ -220,7 +223,7 @@ class ptcngWindow(QDialog):
     def __init__(self, parent):
         super(ptcngWindow, self).__init__(parent)
         self.setWindowTitle("Part Change")
-        # Create a QGridLayout instance
+        
         mlo1 = QVBoxLayout()
         lo1 = QHBoxLayout()
         lo2 = QHBoxLayout()
@@ -229,14 +232,14 @@ class ptcngWindow(QDialog):
         self.stnumbx = QLineEdit()
         self.ednumbx = QLineEdit()
         self.cngstr = QLineEdit()
-        # Add widgets to the layout
+        
         lo1.addWidget(QLabel("Start index"))
         lo1.addWidget(QLabel("End index"))
         lo2.addWidget(self.stnumbx)
         lo2.addWidget(self.ednumbx)
         mlo1.addWidget(QLabel("String to change"))
         mlo1.addWidget(self.cngstr)
-        # Set the layout on the application's window
+        
         btnsymbol = ['Apply', 'Cancel']
         self.funcbtn = [x for x in btnsymbol]
         for i, symbol in enumerate(btnsymbol):

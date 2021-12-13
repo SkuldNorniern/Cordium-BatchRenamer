@@ -13,19 +13,22 @@ def FilesOpen(instance):
     files = []
     if dialog.exec_():
         fileNames = dialog.selectedFiles()
-        for i in fileNames:
-            h, w = Filesep(i)
-            file = [w, w, list2String(i)]
-            files.append(file)
+        filetable(fileNames)
     return files
 
+def filetable(file):
+    files=[]
+    print(file)
+    for i in file:
+        h, w = Filesep(i)
+        filee = [w, w, list2String(i)]
+        files.append(filee)
+    return files
 
 def list2String(s):
     str1 = ""
-
     for ele in s:
         str1 += ele
-
     return str1
 
 def Filesep(filepath):
