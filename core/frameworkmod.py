@@ -96,10 +96,10 @@ class mainWindow(QWidget):
                 bef = self.libox.item(i, 0).text()
                 aft = self.libox.item(i, 1).text()
                 if bef != aft:
-                    path,thr = fnm.Filesep(self.libox.item(i, 2).text())
+                    path=self.libox.item(i, 2).text()
                     fnm.rename(bef,aft,path)
                     self.libox.setItem(i, 0, QTableWidgetItem(aft))
-                    self.libox.setItem(i, 2, QTableWidgetItem(path+aft))
+                    self.libox.setItem(i, 2, QTableWidgetItem(path.replace(bef,aft)))
                     
         #    self.display.setText('0')
         #else:

@@ -14,9 +14,18 @@ def FilesOpen(instance):
         fileNames = dialog.selectedFiles()
         for i in fileNames:
             h, w = Filesep(i)
-            file = [w, w, h+w]
+            file = [w, w, list2String(i)]
             files.append(file)
     return files
+
+
+def list2String(s):
+    str1 = ""
+
+    for ele in s:
+        str1 += ele
+
+    return str1
 
 def Filesep(filepath):
     head, tail = os.path.split(filepath)
