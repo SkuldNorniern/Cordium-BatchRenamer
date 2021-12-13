@@ -86,9 +86,9 @@ class mainWindow(QWidget):
             sfw=schcngWindow(self)
             sfw.exec_()
             for i in range(self.libox.rowCount()):
-                if sfw.fndstring in self.libox.item(i, 1).text():
-                    self.libox.setItem(i, 1, QTableWidgetItem(self.libox.item(
-                        i, 1).text().replace(sfw.fndstring, sfw.cngstring)))
+                tocng = self.libox.item(i, 1).text()
+                if sfw.fndstring in tocng:
+                    self.libox.setItem(i, 1, QTableWidgetItem(tocng.replace(sfw.fndstring, sfw.cngstring)))
         
         elif key == "Front/Back Adding":
             fba= fbaddWindow(self)
@@ -104,6 +104,15 @@ class mainWindow(QWidget):
                     self.libox.setItem(i, 1, QTableWidgetItem(tocng.replace(cur,(fba.cngstring+cur))))
                 elif(fba.where=="Back"):
                     self.libox.setItem(i, 1, QTableWidgetItem(tocng.replace(cur, (cur+fba.cngstring))))
+        
+        elif key == "Part Change":
+            pgw = ptcngWindow(self)
+            pgw.exec_()
+            for i in range(self.libox.rowCount()):
+                tocng = self.libox.item(i, 1).text()
+                if len(tocng) < pgw.ednum:
+                    continue
+                self.libox.setItem(i, 1, QTableWidgetItem(tocng[:pgw.stnum-1]+pgw.cngstring+tocng[pgw.ednum-1:]))
         
         elif key == 'Apply':
             lgm.logmsg("Applying changes","debug")
@@ -155,7 +164,7 @@ class schcngWindow(QDialog):
         lgm.logmsg('Button called', "debug")
         
         if key == 'Apply':
-            self.cngstring = self.cngstr.text()
+            self.fndstring = self.fndstr.text()
             self.cngstring = self.cngstr.text()
             self.close()
         elif key == 'Cancel':
@@ -203,7 +212,58 @@ class fbaddWindow(QDialog):
             self.close()
         elif key == 'Cancel':
             self.where = "N/A"
-            lgm.logmsg("Closing schcngWindow", "debug")
+            lgm.logmsg("Closing fbaddWindow", "debug")
+            self.close()
+
+
+class ptcngWindow(QDialog):
+    def __init__(self, parent):
+        super(ptcngWindow, self).__init__(parent)
+        self.setWindowTitle("Part Change")
+        # Create a QGridLayout instance
+        mlo1 = QVBoxLayout()
+        lo1 = QHBoxLayout()
+        lo2 = QHBoxLayout()
+        lo3 = QHBoxLayout()
+        
+        self.stnumbx = QLineEdit()
+        self.ednumbx = QLineEdit()
+        self.cngstr = QLineEdit()
+        # Add widgets to the layout
+        lo1.addWidget(QLabel("Start index"))
+        lo1.addWidget(QLabel("End index"))
+        lo2.addWidget(self.stnumbx)
+        lo2.addWidget(self.ednumbx)
+        mlo1.addWidget(QLabel("String to change"))
+        mlo1.addWidget(self.cngstr)
+        # Set the layout on the application's window
+        btnsymbol = ['Apply', 'Cancel']
+        self.funcbtn = [x for x in btnsymbol]
+        for i, symbol in enumerate(btnsymbol):
+            self.funcbtn[i] = Button(symbol, self.btnCli)
+
+        for i in range(2):
+            self.funcbtn[i].setMaximumWidth(130)
+            lo3.addWidget(self.funcbtn[i])
+
+        mlo1.addLayout(lo1)
+        mlo1.addLayout(lo2)
+        mlo1.addLayout(lo3)
+        self.setLayout(mlo1)
+        self.show()
+
+    def btnCli(self):
+        button = self.sender()
+        key = button.text()
+        lgm.logmsg('Button called', "debug")
+
+        if key == 'Apply':
+            self.stnum = int(self.stnumbx.text())
+            self.ednum = int(self.ednumbx.text())
+            self.cngstring = self.cngstr.text()
+            self.close()
+        elif key == 'Cancel':
+            lgm.logmsg("Closing ptcngWindow", "debug")
             self.close()
 
 class Button(QToolButton):
@@ -213,9 +273,3 @@ class Button(QToolButton):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setText(text)
         self.clicked.connect(callback)
-
-    #def sizeHint(self):
-    #    size = super(Button, self).sizeHint()
-    #    size.setHeight(size.height() + 10)
-    #    size.setWidth(max(130, size.height()))
-    #    return size
