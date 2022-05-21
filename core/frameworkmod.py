@@ -14,12 +14,12 @@ from PyQt5.QtWidgets import (
     QSizePolicy
  )
 
-
 class mainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Cdm Batch Renamer")
         self.setGeometry(300, 300, 900, 250)
+
         
         mlo1=QVBoxLayout() # for future update
         mlo2=QHBoxLayout()
@@ -27,12 +27,12 @@ class mainWindow(QWidget):
         lo2=QVBoxLayout()
         
         self.libox = QTableWidget()
+        self.libox.horizontalHeader().setStretchLastSection(True)
         self.libox.setColumnCount(3)
         self.libox.setHorizontalHeaderLabels(["Name", "Changed Name","Path"])
         self.setAcceptDrops(True)
 
         lo1.addWidget(self.libox)
-
 
         btnsymbol = ['String Change', 'Front/Back Adding',
                      'Part Change', 'Clear', 'Apply', 'File Select']
@@ -139,7 +139,7 @@ class schcngWindow(QDialog):
     def __init__(self,parent):
         super(schcngWindow,self).__init__(parent)
         self.setWindowTitle("Find and Changer")
-       
+        self.setGeometry(300, 300, 350, 200)
         mlo1= QVBoxLayout()
         lo1= QHBoxLayout()
         self.fndstr=QLineEdit()
@@ -180,7 +180,7 @@ class fbaddWindow(QDialog):
     def __init__(self, parent):
         super(fbaddWindow, self).__init__(parent)
         self.setWindowTitle("Front/Back Add")
-        
+        self.setGeometry(300, 300, 350, 200)
         mlo1 = QVBoxLayout()
         lo1 = QHBoxLayout()
         self.wherebox = QComboBox()
@@ -224,7 +224,7 @@ class ptcngWindow(QDialog):
     def __init__(self, parent):
         super(ptcngWindow, self).__init__(parent)
         self.setWindowTitle("Part Change")
-        
+        self.setGeometry(300, 300, 350, 200)
         mlo1 = QVBoxLayout()
         lo1 = QHBoxLayout()
         lo2 = QHBoxLayout()
@@ -253,7 +253,7 @@ class ptcngWindow(QDialog):
         mlo1.addLayout(lo1)
         mlo1.addLayout(lo2)
         mlo1.addLayout(lo3)
-        self.setLayout(mlo1)
+
         self.show()
 
     def btnCli(self):
